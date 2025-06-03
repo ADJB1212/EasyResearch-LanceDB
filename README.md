@@ -15,6 +15,8 @@ pip3 install -r requirements.txt
 ## Usage
 
 Note: A decent chunk of the pre-collected data from Hugging Face is malformed (the text of the paper was not scraped correctly)
+
+
 lancedb/ currently contains a database built using the Local model method
 
 ### Build Database
