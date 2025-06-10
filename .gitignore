@@ -28,3 +28,5 @@ DerivedData
 *.xcuserstate
 *.dSYM.zip
 icons/
+easyresearch
+.env
