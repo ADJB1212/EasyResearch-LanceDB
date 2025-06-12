@@ -37,6 +37,7 @@ for paper in feed.entries:
         titles.append(paper["title"])
         abstracts.append(paper["summary"])
         arxivIds.append(paper["id"])
+        print(paper["id"])
         seen_ids.add(paper["id"])
     
 

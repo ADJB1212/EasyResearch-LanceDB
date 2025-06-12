@@ -1,13 +1,12 @@
 from sickle import Sickle
 import pandas as pd
-from datetime import datetime 
-import lancedb
-import pickle
-from load_dotenv import load_dotenv
-from google import genai
+from datetime import datetime
+import pickle 
 import os
+from google import genai
+import lancedb
 from tqdm import tqdm
-
+from dotenv import load_dotenv
 
 load_dotenv()
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
@@ -23,7 +22,9 @@ def combine_title_and_abstract(row):
     return f"{row['title']}\n\n{row['abstract']}"
 
 
-#load seen ids
+
+
+#load seen ids:
 try:
     with open("./seen_ids.pkl", "rb") as file:
         seen_ids = pickle.load(file)
@@ -32,16 +33,17 @@ except FileNotFoundError:
     seen_ids = set()
     
     
- 
- #get records from oai 
- 
+# get papers from arxiv oai.
 sickle = Sickle("https://oaipmh.arxiv.org/oai")
-records = sickle.ListRecords(metadataPrefix="arXiv") 
+    
+today = datetime.today().strftime("%Y-%m-%d")
+
+records = sickle.ListRecords(**{"from": today}, metadataPrefix="arXiv") 
 
 data = []
 
 for i, record in enumerate(records):
-    if i > 3:
+    if i > 2:
         break
     
     metadata = record.metadata
@@ -53,22 +55,23 @@ for i, record in enumerate(records):
         if(id and id not in seen_ids):
             
             seen_ids.add(id)
-            
             title = metadata.get("title", [""])[0]
             abstract = metadata.get("abstract", [""])[0]
+            # created = datetime.strptime(metadata["created"][0],  "%Y-%m-%d").date()
 
-
+            
             data.append({
-                "arxiv_id": id,
                 "title": title,
+                "arxiv_id": id,
                 "abstract": abstract,
             })
-
+    
 
 df = pd.DataFrame(data)
-#add to lance
 
+#add to lance db
 db = lancedb.connect("./lancedb")
+
 
 # Combine title + abstract
 documents = df.apply(combine_title_and_abstract, axis=1).tolist()
@@ -91,5 +94,7 @@ print(df2)
 
 with open("./seen_ids.pkl", "wb") as file:
     pickle.dump(seen_ids, file)
-        
-        
+
+
+
+    
